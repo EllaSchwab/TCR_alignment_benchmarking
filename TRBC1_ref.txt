@@ -1,0 +1,10 @@
+>M12887|TRBC1*01|Homo sapiens|F|EX1+EX2+EX3+EX4|213..599+1041..1058+1211..1317+1640..1657|531 nt|1|+1| | | |531+0=531| | |
+gaggacctgaacaaggtgttcccacccgaggtcgctgtgtttgagccatcagaagcagag
+atctcccacacccaaaaggccacactggtgtgcctggccacaggcttcttccccgaccac
+gtggagctgagctggtgggtgaatgggaaggaggtgcacagtggggtcagcacggacccg
+cagcccctcaaggagcagcccgccctcaatgactccagatactgcctgagcagccgcctg
+agggtctcggccaccttctggcagaacccccgcaaccacttccgctgtcaagtccagttc
+tacgggctctcggagaatgacgagtggacccaggatagggccaaacccgtcacccagatc
+gtcagcgccgaggcctggggtagagcagactgtggctttacctcggtgtcctaccagcaa
+ggggtcctgtctgccaccatcctctatgagatcctgctagggaaggccaccctgtatgct
+gtgctggtcagcgcccttgtgttgatggccatggtcaagagaaaggatttc

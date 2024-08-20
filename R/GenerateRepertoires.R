@@ -1,6 +1,6 @@
 #Author: Ella Schwab
 #This script will generate 5 "healthy donor" repertories and generate 5 fasta files each containing
-#250,000 sequences which reads will be generated from 
+#5,000 sequences which reads will be generated from 
 
 #install the immuneSIM package
 install.packages("immuneSIM")
@@ -100,12 +100,16 @@ for (segment in segments) {
 #simulate a repertoire for HD sample 
 #equal cc will ensure that the clonal abundance is equal across all clones
 
+# Set seed for reproducibility
+set.seed(1234)
+
 # Define the number of sequences and number of samples
-num_seqs <- 5000
+num_seqs <- 500
 num_samples <- 5
 
+
 # Define the output directory
-output_dir <- "/project/mangul_341/eschwab/TCR_alignment/"
+output_dir <- "."
 
 # Initialize a list to store the data frames
 hd_samples <- list()
@@ -115,7 +119,7 @@ for (i in 1:num_samples) {
   # Simulate the repertoire for the current HD sample
   hd_samples[[i]] <- immuneSIM(
     number_of_seqs = num_seqs,
-    vdj_list = new_gene_list,
+    vdj_list = final_gene_list,
     species = "hs",
     receptor = "tr",
     chain = "b",
@@ -130,116 +134,39 @@ for (i in 1:num_samples) {
 }
 
 
-# Install viridis if not already installed
-install.packages("viridis")
+#create a .fasta file for each sample/repertoire so that reads can be generated  
 
-# Load viridis
-library(viridis)
-# Load the libraries
-library(ggplot2)
+charVectorToFasta <- function(sequences, outputName) {
+  fastaContent <- vector(mode = "character", length = length(sequences) * 2)
+  
+  for (i in 1:length(sequences)) {
+    fastaContent[2*i - 1] <- as.character(paste(">seq", i, sep = ""))
+    fastaContent[2*i] <- as.character(sequences[i])
+  }
+  
+  outFile <- file(outputName)
+  writeLines(fastaContent, outFile)
+  close(outFile)
+}
 
+# List of data frames and corresponding file names
+data_frames <- lapply(hd_samples, function(df) df$sequence)
+output_files <- c("HD1.fasta", "HD2.fasta", "HD3.fasta", "HD4.fasta", "HD5.fasta")
 
+# Directory to save FASTA files
+output_dir <- "./fasta"
 
-# Calculate frequencies for V alleles
-frequencyV_HD1 <- HD1 %>%
-  count(v_call) %>%             # Count occurrences of each unique value
-  rename(frequency = n)         # Rename the count column for clarity
-
-# Sort the data frame by 'v_call'
-frequencyV_HD1 <- frequencyV_HD1 %>%
-  arrange(v_call)  # Change to arrange(desc(v_call)) for descending order
-
-frequencyV_HD1 <- frequencyV_HD1 %>%
-  mutate(percentage = (frequency / sum(frequency)) * 100)  # Convert to percentage
-
-
-# Calculate frequencies
-frequencyD_HD1 <- HD1 %>%
-  count(d_call) %>%             # Count occurrences of each unique value
-  rename(frequency = n)         # Rename the count column for clarity
-
-# Sort the data frame by 'd_call'
-frequencyD_HD1 <- frequencyD_HD1 %>%
-  arrange(d_call)  # Change to arrange(desc(v_call)) for descending order
-
-frequencyD_HD1 <- frequencyD_HD1 %>%
-  mutate(percentage = (frequency / sum(frequency)) * 100)  # Convert to percentage
-
-# Calculate frequencies
-frequencyJ_HD1 <- HD1 %>%
-  count(j_call) %>%             # Count occurrences of each unique value
-  rename(frequency = n)         # Rename the count column for clarity
-
-# Sort the data frame by 'd_call'
-frequencyJ_HD1 <- frequencyJ_HD1 %>%
-  arrange(j_call)  # Change to arrange(desc(v_call)) for descending order
-
-frequencyJ_HD1 <- frequencyJ_HD1 %>%
-  mutate(percentage = (frequency / sum(frequency)) * 100)  # Convert to percentage
-
-# Create the bar plot for V alleles
-plotV <- ggplot(frequencyV_HD1, aes(x = v_call, y = percentage, fill = v_call)) +
-  geom_bar(stat = "identity") +    # Use 'identity' to plot frequencies
-  theme_minimal() +      # Use a minimal theme
-  scale_fill_viridis_d(option = "mako") +  
-  labs(x = "V allele", y = "Frequency (%)") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for readability
-
-# Create the bar plot for J alleles
-plotJ <-ggplot(frequencyJ_HD1, aes(x = j_call, y = percentage, fill = j_call)) +
-  geom_bar(stat = "identity") +    # Use 'identity' to plot frequencies
-  theme_minimal() +      # Use a minimal theme
-  scale_fill_viridis_d(option = "mako") +  
-  labs(x = "J allele", y = "Frequency (%)") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for readability
-
-
-#plot the V call and J call side by side
-# Install patchwork if not already installed
-install.packages("patchwork")
-
-# Load patchwork
-library(patchwork)
-
-# Combine the plots side by side
-stacked_plot <- plotV/plotJ
-
-# Save the combined plot to a file
-ggsave(filename = "stacked_plot.png", plot = stacked_plot, width = 12, height = 8, dpi = 300)
-
-
-#Plot CDR3 length distribution for HD1
-
-# Calculate CDR3 lengths and their frequencies
-HD1_CDR3freq <- HD1 %>%
-  mutate(CDR3_length = nchar(junction_aa)) %>%  # Calculate CDR3 lengths
-  group_by(CDR3_length) %>%                     # Group by length
-  summarize(count = n()) %>%                    # Count occurrences
-  mutate(frequency = count / sum(count) * 100)  # Calculate frequency as a percentage
-
-# Calculate TCR sequence lengths and their frequencies
-HD1_TCRfreq <- HD1 %>%
-  mutate(TCR_length = nchar(sequence)) %>%  # Calculate CDR3 lengths
-  group_by(TCR_length) %>%                     # Group by length
-  summarize(count = n()) %>%                    # Count occurrences
-  mutate(frequency = count / sum(count) * 100)  # Calculate frequency as a percentage
-
-
-
-# Create the bar plot with frequency on the y-axis
-CDR3_lengths<- ggplot(HD1_CDR3freq, aes(x = CDR3_length, y = frequency)) +
-  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
-  theme_minimal() +
-  labs(x = "CDR3 Length (Amino Acids)", y = "Frequency (%)", 
-       title = "Distribution of CDR3 Lengths")
-
-# Create the bar plot with frequency on the y-axis and sequence length on the x
-ggplot(HD1_TCRfreq, aes(x = TCR_length, y = frequency)) +
-  geom_bar(stat = "identity", fill = "red", color = "black") +
-  theme_minimal() +
-  labs(x = "TCR Length (Nucleotides)", y = "Frequency (%)", 
-       title = "Distribution of TCR Lengths")
-
-
-# Save the combined plot to a file
-ggsave(filename = "CDR3_lengths.png", plot = CDR3_lengths, width = 12, height = 8, dpi = 300)
+# Generate FASTA files for each data frame
+for (i in seq_along(data_frames)) {
+  # Define the full file path
+  output_path <- file.path(output_dir, output_files[i])
+  
+  # Save the FASTA file
+  charVectorToFasta(data_frames[[i]], output_path)
+  
+  # Print the first few lines of the generated FASTA file for verification
+  fastaContent <- readLines(output_path)
+  cat("First few lines of", output_files[i], ":\n")
+  print(head(fastaContent))
+  cat("\n")
+}
