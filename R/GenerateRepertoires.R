@@ -15,9 +15,30 @@ library(readr)
 install.packages("dplyr")
 library(dplyr)
 
-# Read the text file
+# Read the text files
 reference <- read_lines("IMGT_ref.txt")
+C_region_reference <- read_lines("TRBC1_ref.txt")
 
+
+# Initialize variables
+trbc_sequence <- ""
+recording <- FALSE
+
+# Loop through each line of the C region reference file
+for (line in C_region_reference) {
+  if (startsWith(line, ">M12887|TRBC1")) {
+    # Start recording after the header line
+    recording <- TRUE
+  } else if (recording && startsWith(line, ">")) {
+    # Stop recording if another header line is encountered
+    break
+  } else if (recording) {
+    # Append the line to the sequence
+    trbc_sequence <- paste0(trbc_sequence, line)
+  }
+}
+
+#Grab V alleles from reference file 
 # Initialize vectors to store the extracted data
 genes <- c()
 alleles <- c()
@@ -114,6 +135,7 @@ output_dir <- "."
 # Initialize a list to store the data frames
 hd_samples <- list()
 
+
 # Loop to simulate each HD sample and save as CSV
 for (i in 1:num_samples) {
   # Simulate the repertoire for the current HD sample
@@ -123,10 +145,15 @@ for (i in 1:num_samples) {
     species = "hs",
     receptor = "tr",
     chain = "b",
+    max_cdr3_length = 20,
+    min_cdr3_length = 6,
     equal_cc = TRUE,
     verbose = TRUE,
     airr_compliant = TRUE
   )
+  
+  # Append TRBC sequence to the sequences in the simulated data frame
+  hd_samples[[i]]$sequence <- paste0(hd_samples[[i]]$sequence, trbc_sequence)
   
   # Save the current HD sample as a CSV file
   output_path <- file.path(output_dir, paste0("HD", i, ".csv"))

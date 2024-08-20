@@ -106,74 +106,6 @@ for (name in names(plot_list)) {
 
 
 
-# Calculate frequencies for V alleles
-frequencyV_HD1 <- HD1 %>%
-  count(v_call) %>%             # Count occurrences of each unique value
-  rename(frequency = n)         # Rename the count column for clarity
-
-# Sort the data frame by 'v_call'
-frequencyV_HD1 <- frequencyV_HD1 %>%
-  arrange(v_call)  # Change to arrange(desc(v_call)) for descending order
-
-frequencyV_HD1 <- frequencyV_HD1 %>%
-  mutate(percentage = (frequency / sum(frequency)) * 100)  # Convert to percentage
-
-
-# Calculate frequencies
-frequencyD_HD1 <- HD1 %>%
-  count(d_call) %>%             # Count occurrences of each unique value
-  rename(frequency = n)         # Rename the count column for clarity
-
-# Sort the data frame by 'd_call'
-frequencyD_HD1 <- frequencyD_HD1 %>%
-  arrange(d_call)  # Change to arrange(desc(v_call)) for descending order
-
-frequencyD_HD1 <- frequencyD_HD1 %>%
-  mutate(percentage = (frequency / sum(frequency)) * 100)  # Convert to percentage
-
-# Calculate frequencies
-frequencyJ_HD1 <- HD1 %>%
-  count(j_call) %>%             # Count occurrences of each unique value
-  rename(frequency = n)         # Rename the count column for clarity
-
-# Sort the data frame by 'd_call'
-frequencyJ_HD1 <- frequencyJ_HD1 %>%
-  arrange(j_call)  # Change to arrange(desc(v_call)) for descending order
-
-frequencyJ_HD1 <- frequencyJ_HD1 %>%
-  mutate(percentage = (frequency / sum(frequency)) * 100)  # Convert to percentage
-
-# Create the bar plot for V alleles
-plotV <- ggplot(frequencyV_HD1, aes(x = v_call, y = percentage, fill = v_call)) +
-  geom_bar(stat = "identity") +    # Use 'identity' to plot frequencies
-  theme_minimal() +      # Use a minimal theme
-  scale_fill_viridis_d(option = "mako") +  
-  labs(x = "V allele", y = "Frequency (%)") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for readability
-
-# Create the bar plot for J alleles
-plotJ <-ggplot(frequencyJ_HD1, aes(x = j_call, y = percentage, fill = j_call)) +
-  geom_bar(stat = "identity") +    # Use 'identity' to plot frequencies
-  theme_minimal() +      # Use a minimal theme
-  scale_fill_viridis_d(option = "mako") +  
-  labs(x = "J allele", y = "Frequency (%)") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for readability
-
-
-#plot the V call and J call side by side
-# Install patchwork if not already installed
-install.packages("patchwork")
-
-# Load patchwork
-library(patchwork)
-
-# Combine the plots side by side
-stacked_plot <- plotV/plotJ
-
-# Save the combined plot to a file
-ggsave(filename = "stacked_plot.png", plot = stacked_plot, width = 12, height = 8, dpi = 300)
-
-
 #Plot CDR3 length distribution for HD1
 
 # Calculate CDR3 lengths and their frequencies
@@ -208,4 +140,4 @@ ggplot(HD1_TCRfreq, aes(x = TCR_length, y = frequency)) +
 
 
 # Save the combined plot to a file
-ggsave(filename = "CDR3_lengths.png", plot = CDR3_lengths, width = 12, height = 8, dpi = 300)
+ggsave(filename = "HD1_CDR3_lengths.jpeg", plot = CDR3_lengths, width = 12, height = 8, dpi = 300)
