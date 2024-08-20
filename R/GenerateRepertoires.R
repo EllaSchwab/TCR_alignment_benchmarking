@@ -125,7 +125,7 @@ for (segment in segments) {
 set.seed(1234)
 
 # Define the number of sequences and number of samples
-num_seqs <- 500
+num_seqs <- 5000
 num_samples <- 5
 
 
